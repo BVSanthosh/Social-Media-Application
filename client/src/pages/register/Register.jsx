@@ -8,8 +8,7 @@ const Register = () => {
     const [inputs, setInputs] = useState({
         username: "",
         email: "",
-        password: "",
-        name: ""
+        password: ""
     });
 
     const [err, setErr] = useState(null);
@@ -51,7 +50,6 @@ const Register = () => {
                         <input type="text" name="username" placeholder="Username" onChange={handleChange}/>
                         <input type="text" name="email" placeholder="Email" onChange={handleChange} />
                         <input type="password" name="password" placeholder="Password" onChange={handleChange} />
-                        <input type="text" name="name" placeholder="Name" onChange={handleChange} />
                         {err && err.response.data}
                         <button onClick={handleClick}>Register</button>
                     </form>
