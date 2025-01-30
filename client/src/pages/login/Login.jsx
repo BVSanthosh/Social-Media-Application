@@ -36,9 +36,9 @@ const Login = () => {
         <div className="login">
             <div className="card">
                 <div className="left">
-                    <h1>Welcome</h1>
+                    <h1>Welcome Back</h1>
                     <p>
-                        Re-enter the world of social media
+                        Enter the world of social media
                     </p>
                     <span>Don't have an account?</span>
                     <Link to="/register">
