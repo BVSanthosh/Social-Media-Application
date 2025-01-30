@@ -4,8 +4,8 @@ import { useContext, useState } from "react";
 import { AuthContext } from "../../context/authContext";
 
 const Login = () => {
-    const navigate = useNavigate();
     const {login} = useContext(AuthContext);
+    const navigate = useNavigate();
     const [inputs, setInputs] = useState({
         username: "",
         password: ""

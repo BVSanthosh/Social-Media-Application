@@ -2,7 +2,6 @@ import  "./post.scss";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
 import TextsmsOutlinedIcon from "@mui/icons-material/TextsmsOutlined";
-import ShareOutlinedIcon from "@mui/icons-material/ShareOutlined";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import { Link } from "react-router-dom";
 import Comments from "../comments/Comments";
@@ -19,13 +18,21 @@ const Post = ({ post }) => {
 
     const queryClient = useQueryClient();
 
-    const { isLoading, error, data = []} = useQuery({
+    const { isLoading: likesLoading, error: likesError, data: likesData = []} = useQuery({
         queryKey: ["likes", post.id], 
         queryFn: async () => {
           const res = await makeRequest.get("/api/likes?postId=" + post.id);
           return res.data;
         }
     })
+
+    const { isLoading: comLoading, error: comError, data: comData = []} = useQuery({
+        queryKey: ["comments", post.id],
+        queryFn: async () => {
+            const res = await makeRequest.get("/api/comments?postId=" + post.id);
+            return res.data;
+        }
+    });
 
     const mutation = useMutation({
         mutationFn: async (liked) => {
@@ -49,15 +56,26 @@ const Post = ({ post }) => {
         }
     })
 
+    const commentsMutation = useMutation({
+        mutationFn: async (newComment) => {
+            return await makeRequest.post("/api/comments", newComment);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["comments"] });
+        }
+    })
+
+    const handleSendComment = async (desc) => {
+        commentsMutation.mutate({ desc, postId: post.id });
+    }
+
     const handleLike = () => {
-        mutation.mutate(data.includes(currentUser.id));
+        mutation.mutate(likesData.includes(currentUser.id));
     }
 
     const handleDelete = () => {
         deleteMutation.mutate(post.id);
     }
-
-    console.log(post);
 
     return (
         <div className="post"> 
@@ -67,7 +85,7 @@ const Post = ({ post }) => {
                         <img src={"/upload/"+post.profilePic} alt="" />
                         <div className="details">
                             <Link to={`/profile/${post.userId}`} style={{textDecoration: "none", color: "inherit"}}>
-                                <span className="name">{post.name}</span>
+                                <span className="name">{post.username}</span>
                             </Link>
                             <span className="date">{moment(post.createdAt).fromNow()}</span>
                         </div>
@@ -81,27 +99,23 @@ const Post = ({ post }) => {
                 </div>
                 <div className="info">
                     <div className="items">
-                        {isLoading 
+                        {likesLoading 
                             ? "loading" 
-                            : data.includes(currentUser.id) 
+                            : likesData.includes(currentUser.id) 
                             ? (
                                 <FavoriteOutlinedIcon style={{color: "red"}} onClick={handleLike} /> 
                             ) : ( 
                                 <FavoriteBorderOutlinedIcon onClick={handleLike}/>
                             )
                         }
-                        {data.length} likes
+                        {likesData.length} likes
                     </div>
                     <div className="items" onClick={() => setCommentOpen(!commentOpen)}>
                         <TextsmsOutlinedIcon />
-                        12 Comments
-                    </div>
-                    <div className="items">
-                        <ShareOutlinedIcon />
-                        Share
+                        {comData.length} comments
                     </div>
                 </div>
-                {commentOpen && <Comments postId={post.id}/>}
+                {commentOpen && <Comments postId={post.id} comLoading={comLoading} comError={comError} comData={comData} handleSendComment={handleSendComment} />}
             </div>
         </div>
     )
